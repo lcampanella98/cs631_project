@@ -1,4 +1,4 @@
-use easypay;
+use lrc22;
 CREATE TABLE BankAccount (
 	BankID INT NOT NULL,
     BANumber INT NOT NULL,
