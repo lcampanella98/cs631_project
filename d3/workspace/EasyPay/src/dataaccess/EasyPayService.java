@@ -27,6 +27,7 @@ public class EasyPayService {
 		try {
 			//Class.forName("com.mysql.jdbc.Driver");
 			Connection con = DriverManager.getConnection(CON_STR, "lrc22", "I4ZEwI8A3");
+			con.setAutoCommit(false);
 			return con;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -34,11 +35,27 @@ public class EasyPayService {
 		return null;
 	}
 	
+	public void closeConnection() {
+		if (con != null) {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public UserAccount getUserAccountFromSSN(String ssn) {
 		try {
 			PreparedStatement ps = con.prepareStatement("SELECT * FROM UserAccount WHERE SSN=?");
 			ps.setString(1, ssn);
-			List<UserAccount> accList = getUserAccountsFromResultSet(ps.executeQuery());
+			ResultSet r = ps.executeQuery();
+			
+			List<UserAccount> accList = getUserAccountsFromResultSet(r);
+			
+			r.close();
+			con.commit();
+			
 			if (accList.isEmpty()) return null;
 			return accList.get(0);
 		}
@@ -52,7 +69,13 @@ public class EasyPayService {
 		try {
 			PreparedStatement ps = con.prepareStatement("SELECT * FROM UserAccount WHERE Name=?");
 			ps.setString(1, name);
-			List<UserAccount> accList = getUserAccountsFromResultSet(ps.executeQuery());
+			ResultSet r = ps.executeQuery();
+			
+			List<UserAccount> accList = getUserAccountsFromResultSet(r);
+			
+			r.close();
+			con.commit();
+			
 			if (accList.isEmpty()) return null;
 			return accList.get(0);
 		}
@@ -76,6 +99,9 @@ public class EasyPayService {
 				u.primaryAccount.BANumber = r.getInt("PBANumber");
 				ua.add(u);
 			}
+			r.close();
+			con.commit();
+			
 			return ua;
 		}
 		catch (SQLException e) {
@@ -96,6 +122,9 @@ public class EasyPayService {
 				ba.BANumber = r.getInt("UBANumber");
 				l.add(ba);
 			}
+			r.close();
+			con.commit();
+			
 			return l;
 		}
 		catch (SQLException e) {
@@ -116,7 +145,7 @@ public class EasyPayService {
 	public List<EmailAddress> getUserEmailAddresses(String ssn) {
 		try {
 			PreparedStatement ps = con.prepareStatement(
-					"SELECT * FROM EmailAddress"
+					"SELECT * FROM EmailAddress\n"
 					+ "	WHERE USSN=?"
 			);
 			ps.setString(1, ssn);
@@ -130,6 +159,9 @@ public class EasyPayService {
 				ea.USSN = r.getString("USSN");
 				l.add(ea);
 			}
+			r.close();
+			con.commit();
+			
 			return l;
 		}
 		catch (SQLException e) {
@@ -141,7 +173,7 @@ public class EasyPayService {
 	public List<Phone> getUserPhoneNumbers(String ssn) {
 		try {
 			PreparedStatement ps = con.prepareStatement(
-					"SELECT * FROM Phone"
+					"SELECT * FROM Phone\n"
 					+ "	WHERE USSN=?"
 			);
 			ps.setString(1, ssn);
@@ -155,12 +187,234 @@ public class EasyPayService {
 				p.USSN = r.getString("USSN");
 				l.add(p);
 			}
+			r.close();
+			con.commit();
+			
 			return l;
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public boolean electronicAddressExists(ElectronicAddress ea) {
+		try {
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT EXISTS(\n"
+							+ "SELECT * FROM ElectronicAddress WHERE Identifier=?\n"
+					+ ");");
+			ps.setString(1, ea.Identifier);
+			ResultSet r = ps.executeQuery();
+			boolean exists = r.first() && r.getBoolean(1);
+			
+			r.close();
+			con.commit();
+			
+			return exists;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public void deleteElectronicAddress(String identifier) {
+		try {
+			PreparedStatement ps = con.prepareStatement("DELETE FROM ElectronicAddress WHERE Identifier=?");
+			ps.setString(1, identifier);
+			ps.executeUpdate();
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void addElectronicAddress(ElectronicAddress ea) {
+		try {
+			String table = null;
+			if 		(ea instanceof EmailAddress) table = "EmailAddress";
+			else if (ea instanceof Phone)		 table = "Phone";
+			
+			if (table == null) return;
+			
+			PreparedStatement ps = con.prepareStatement("INSERT INTO ElectronicAddress (Identifier) VALUES (?)");
+			ps.setString(1, ea.Identifier);
+			ps.executeUpdate();
+			
+			ps = con.prepareStatement("INSERT INTO " + table + " (Identifier,Verified,USSN) VALUES (?,?,?)");
+			if (table.equals("EmailAddress")) {
+				EmailAddress email = (EmailAddress)ea;
+				ps.setString(1, email.Identifier);
+				ps.setBoolean(2, email.Verified);
+				ps.setString(3, email.USSN);
+			}
+			else if (table.equals("Phone")) {
+				Phone p = (Phone)ea;
+				ps.setString(1, p.Identifier);
+				ps.setBoolean(2, p.Verified);
+				ps.setString(3, p.USSN);
+			}
+			
+			ps.executeUpdate();
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void addBankAccountToUser(BankAccount acct, String ssn) {
+		try {
+			if (!bankAccountExists(acct)) {
+				addBankAccount(acct);
+			}
+			
+			PreparedStatement ps = con.prepareStatement("INSERT INTO Has_Additional (UBankID,UBANumber,USSN) VALUES (?,?,?)");
+			ps.setInt(1, acct.BankID);
+			ps.setInt(2, acct.BANumber);
+			ps.setString(3, ssn);
+			ps.executeUpdate();
+			
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void addBankAccount(BankAccount acct) {
+		try {
+			PreparedStatement ps = con.prepareStatement("INSERT INTO BankAccount (BankID,BANumber) VALUES (?,?)");
+			ps.setInt(1, acct.BankID);
+			ps.setInt(2, acct.BANumber);
+			ps.executeUpdate();
+			
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void deleteBankAccountFromUser(BankAccount acct, String ssn) {
+		try {
+			PreparedStatement ps = con.prepareStatement("DELETE FROM Has_Additional WHERE UBankID=? AND UBANumber=? AND USSN=?");
+			ps.setInt(1,  acct.BankID);
+			ps.setInt(2, acct.BANumber);
+			ps.setString(3, ssn);
+			ps.executeUpdate();
+			
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean bankAccountExists(BankAccount acct) {
+		try {
+			PreparedStatement ps = con.prepareStatement("SELECT EXISTS (\n"
+					+ "SELECT * FROM BankAccount WHERE BankID=? AND BANumber=?\n"
+					+ ")");
+			ps.setInt(1, acct.BankID);
+			ps.setInt(2, acct.BANumber);
+			ResultSet r = ps.executeQuery();
+			boolean exists = r.first() && r.getBoolean(1);
+			
+			r.close();
+			con.commit();
+			
+			return exists;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public boolean userHasBankAccount(BankAccount acct, String ssn) {
+		return isAdditionalBankAccount(acct, ssn) || isPrimaryBankAccount(acct, ssn);
+	}
+	
+	public boolean isPrimaryBankAccount(BankAccount acct, String ssn) {
+		try {
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT EXISTS (\n"
+							+ "SELECT * FROM UserAccount\n"
+							+ "	WHERE SSN=? AND PBankID=? AND PBANumber=?\n"
+					+ ")");
+			ps.setString(1, ssn);
+			ps.setInt(2, acct.BankID);
+			ps.setInt(3, acct.BANumber);
+			ResultSet r = ps.executeQuery();
+			boolean isPrimary = r.first() && r.getBoolean(1);
+			
+			r.close();
+			con.commit();
+			
+			return isPrimary;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public boolean isAdditionalBankAccount(BankAccount acct, String ssn) {
+		try {
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT EXISTS (\n"
+							+ "SELECT * FROM Has_Additional\n"
+							+ "	WHERE UBankID=? AND UBANumber=? AND USSN=?\n"
+					+ ")");
+			ps.setInt(1, acct.BankID);
+			ps.setInt(2, acct.BANumber);
+			ps.setString(3, ssn);
+			
+			ResultSet r = ps.executeQuery();
+			boolean isAdditional = r.first() && r.getBoolean(1);
+			
+			r.close();
+			con.commit();
+			
+			return isAdditional;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public void setPrimaryBankAccount(BankAccount acct, String ssn) {
+		try {
+			PreparedStatement ps = con.prepareStatement("DELETE FROM Has_Additional WHERE UBankID=? AND UBANumber=? AND USSN=?");
+			ps.setInt(1, acct.BankID);
+			ps.setInt(2, acct.BANumber);
+			ps.setString(3, ssn);
+			ps.executeUpdate();
+			
+			ps = con.prepareStatement(
+					"INSERT INTO Has_Additional (UBankID,UBANumber,USSN)\n"
+					+ "SELECT PBankID,PBANumber,SSN FROM UserAccount WHERE SSN=?");
+			ps.setString(1, ssn);
+			ps.executeUpdate();
+			
+			ps = con.prepareStatement(
+					"UPDATE UserAccount\n"
+					+ "SET PBankID=?, PBANumber=?\n"
+					+ "WHERE SSN=?");
+			ps.setInt(1, acct.BankID);
+			ps.setInt(2, acct.BANumber);
+			ps.setString(3, ssn);
+			ps.executeUpdate();
+			
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }
