@@ -38,7 +38,7 @@
   </servlet-mapping>
 
   <servlet-mapping>
-   <url-pattern>/webapps8</url-pattern>
+   <url-pattern>/webapps8/</url-pattern>
    <servlet-name>SignIn</servlet-name>
   </servlet-mapping>
   

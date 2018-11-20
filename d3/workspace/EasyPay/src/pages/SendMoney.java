@@ -65,7 +65,7 @@ public class SendMoney extends EasyPayServlet {
 	}
 	
 	private void printDeleteButton(SendTransaction st) {
-		out.println("<form method=\"get\" action=\""+BASE_PATH+"DeleteSendTransaction\" style=\"display:inline-block;\">"
+		out.println("<form method=\"get\" action=\"./DeleteSendTransaction\" style=\"display:inline-block;\">"
 							+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
 							+ "<input type=\"hidden\" name=\"stid\" value=\"" + st.STID + "\" />"
 							+ "<button class=\"btn btn-sm btn-danger\" type=\"submit\">Delete</button>"
@@ -75,7 +75,7 @@ public class SendMoney extends EasyPayServlet {
 	private void printSendForm() {
 		out.println("<div class=\"row\">"
 				+ "<div class=\"col-sm-6\">"
-				+ "<form method=\"get\" action=\""+BASE_PATH+"PerformSendMoney\">"
+				+ "<form method=\"get\" action=\"./PerformSendMoney\">"
 					+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
 					+ "<input type=\"number\" class=\"form-control\" name=\"amount\" placeholder=\"Amount\" />"
 					+ "<div style=\"margin-top:10px;margin-bottom:10px;\">"

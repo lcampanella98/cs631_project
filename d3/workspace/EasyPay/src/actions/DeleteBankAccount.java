@@ -21,6 +21,6 @@ public class DeleteBankAccount extends EasyPayServlet {
 		
 		_easyPayService.deleteBankAccountFromUser(ba, ssn);
 		
-		resp.sendRedirect(BASE_PATH + "MyAccount?ssn=" + encParam(ssn));
+		resp.sendRedirect("./MyAccount?ssn=" + encParam(ssn));
 	}
 }

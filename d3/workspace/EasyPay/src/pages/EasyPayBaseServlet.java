@@ -19,7 +19,7 @@ public abstract class EasyPayBaseServlet extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 9007811510279142478L;
 	
-	protected static final String BASE_PATH = "/~lrc22/webapps8/";
+	protected static String BASE_PATH = "/~lrc22/webapps8/";
 	
 	protected EasyPayService _easyPayService;
 	
@@ -28,7 +28,9 @@ public abstract class EasyPayBaseServlet extends HttpServlet {
 	
 	protected PrintWriter out;
 	
-	public EasyPayBaseServlet() {}
+	public EasyPayBaseServlet() {
+		
+	}
 	
 	public void init() throws ServletException {
 		

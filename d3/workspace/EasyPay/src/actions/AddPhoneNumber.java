@@ -17,7 +17,7 @@ public class AddPhoneNumber extends EasyPayServlet {
 		
 		String identifier = req.getParameter("identifier");
 		
-		String redir = BASE_PATH + "MyAccount?ssn=" + encParam(ssn);
+		String redir = "./MyAccount?ssn=" + encParam(ssn);
 		String errorParam = "addphoneerror";
 		
 		if (identifier == null || identifier.isEmpty() || !identifier.matches("\\d[\\d\\s-]*")) {

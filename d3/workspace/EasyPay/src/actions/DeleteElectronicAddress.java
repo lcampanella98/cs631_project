@@ -18,6 +18,6 @@ public class DeleteElectronicAddress extends EasyPayServlet {
 		String identifier = req.getParameter("identifier");
 		
 		_easyPayService.deleteElectronicAddress(identifier);
-		resp.sendRedirect(BASE_PATH + "MyAccount?ssn=" + URLEncoder.encode(ssn, "UTF-8"));
+		resp.sendRedirect("./MyAccount?ssn=" + URLEncoder.encode(ssn, "UTF-8"));
 	}
 }
