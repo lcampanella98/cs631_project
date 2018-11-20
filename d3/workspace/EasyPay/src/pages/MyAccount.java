@@ -13,11 +13,10 @@ import models.electronicaddress.Phone;
 public class MyAccount extends EasyPayServlet{
 	
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.setContentType("text/html");
+		super.doGet(req, resp);
 		
+		resp.setContentType("text/html");		
 		this.title = "My Account";
-		this.out = resp.getWriter();
-		this.ssn = req.getParameter("ssn");
 		
 		List<EmailAddress> emails = null;
 		List<Phone> phones = null;
@@ -32,7 +31,7 @@ public class MyAccount extends EasyPayServlet{
 		}
 		
 
-		printPreHTML(out);
+		printPreHTML();
 		if (user == null) {
 			out.println("<h4>User with ssn " + ssn + " not found</h4>");
 		}
@@ -113,7 +112,7 @@ public class MyAccount extends EasyPayServlet{
 			out.println("</div>");
 			
 		}
-		printPostHTML(out);
+		printPostHTML();
 		
 	}
 	

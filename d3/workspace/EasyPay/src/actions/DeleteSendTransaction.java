@@ -1,7 +1,6 @@
 package actions;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -9,15 +8,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import pages.EasyPayServlet;
 
-public class DeleteElectronicAddress extends EasyPayServlet {
-	
+public class DeleteSendTransaction extends EasyPayServlet {
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		super.doGet(req, resp);
 		
-		String identifier = req.getParameter("identifier");
+		int stid = Integer.parseInt(req.getParameter("stid"));
 		
-		_easyPayService.deleteElectronicAddress(identifier);
-		resp.sendRedirect("/MyAccount?ssn=" + URLEncoder.encode(ssn, "UTF-8"));
+		if (_easyPayService.canCancelSendPayment(stid)) {
+			_easyPayService.cancelSendPayment(stid);			
+		}
+		
+		resp.sendRedirect("/SendMoney?ssn=" + encParam(ssn));
 	}
+	
 }

@@ -5,14 +5,17 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import config.EPConstants;
 import models.BankAccount;
+import models.SendTransaction;
 import models.UserAccount;
 import models.electronicaddress.ElectronicAddress;
 import models.electronicaddress.EmailAddress;
 import models.electronicaddress.Phone;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class EasyPayService {
 	private static final String CON_STR = "jdbc:mysql://sql1.njit.edu/lrc22";
@@ -97,6 +100,7 @@ public class EasyPayService {
 				u.primaryAccount = new BankAccount();
 				u.primaryAccount.BankID = r.getInt("PBankID");
 				u.primaryAccount.BANumber = r.getInt("PBANumber");
+				u.primaryAccount.Verified = true;
 				ua.add(u);
 			}
 			r.close();
@@ -112,14 +116,18 @@ public class EasyPayService {
 	
 	public List<BankAccount> getOtherUserBankAccounts(String ssn) {
 		try {
-			PreparedStatement ps = con.prepareStatement("SELECT * FROM Has_Additional WHERE USSN=?");
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT BankID,BANumber,Verified \n"
+					+ "FROM Has_Additional,BankAccount "
+					+ "WHERE UBankID=BankID AND UBANumber=BANumber AND USSN=?");
 			ps.setString(1, ssn);
 			ResultSet r = ps.executeQuery();
 			List<BankAccount> l = new ArrayList<BankAccount>();
 			while (r.next()) {
 				BankAccount ba = new BankAccount();
-				ba.BankID = r.getInt("UBankID");
-				ba.BANumber = r.getInt("UBANumber");
+				ba.BankID = r.getInt("BankID");
+				ba.BANumber = r.getInt("BANumber");
+				ba.Verified = r.getBoolean("Verified");
 				l.add(ba);
 			}
 			r.close();
@@ -219,11 +227,43 @@ public class EasyPayService {
 		return false;
 	}
 	
+	public String getUserSSNFromElectronicAddress(ElectronicAddress ea) {
+		try {
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT USSN FROM EmailAddress WHERE Identifier=?\n"
+					+ "UNION ALL\n"
+					+ "SELECT USSN FROM Phone WHERE Identifier=?\n");
+			ps.setString(1, ea.Identifier);
+			ps.setString(2, ea.Identifier);
+			ResultSet r = ps.executeQuery();
+			String ssn = null;
+			if (r.first()) ssn = r.getString(1);
+			
+			r.close();
+			con.commit();
+			
+			return ssn;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public void deleteElectronicAddress(String identifier) {
 		try {
 			PreparedStatement ps = con.prepareStatement("DELETE FROM ElectronicAddress WHERE Identifier=?");
 			ps.setString(1, identifier);
 			ps.executeUpdate();
+			
+			ps = con.prepareStatement("DELETE FROM EmailAddress WHERE Identifier=?");
+			ps.setString(1, identifier);
+			ps.executeUpdate();
+			
+			ps = con.prepareStatement("DELETE FROM Phone WHERE Identifier=?");
+			ps.setString(1, identifier);
+			ps.executeUpdate();
+			
 			con.commit();
 		}
 		catch (SQLException e) {
@@ -417,4 +457,126 @@ public class EasyPayService {
 		}
 	}
 	
+	/* Payment methods */
+	public List<SendTransaction> getSendTransactionsAvailableToCancel(String fromSSN) {
+		try {
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT * FROM SendTransaction \n"
+					+ "WHERE ISSN=? \n"
+					+ "AND Cancelled=0 "
+					+ "AND TIMESTAMPDIFF(MINUTE,DateInitialized,NOW()) < " + EPConstants.CANCELLATION_WINDOW_MINUTES);
+			ps.setString(1, fromSSN);
+			ResultSet r = ps.executeQuery();
+			List<SendTransaction> l = new ArrayList<SendTransaction>();
+			SendTransaction st;
+			while (r.next()) {
+				st = new SendTransaction();
+				st.Amount = r.getInt("Amount");
+				st.Cancelled = r.getBoolean("Cancelled");
+				st.DateInitialized = r.getTimestamp("DateInitialized");
+				st.ISSN = r.getString("ISSN");
+				st.Memo = r.getString("Memo");
+				st.STID = r.getInt("STID");
+				st.ToIdentifier = r.getString("ToIdentifier");
+				l.add(st);
+			}
+			r.close();
+			con.commit();
+			return l;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public void sendPayment(SendTransaction st) {
+		try {
+			PreparedStatement ps = con.prepareStatement(
+					"INSERT INTO SendTransaction (Amount,DateInitialized,Memo,Cancelled,ISSN,ToIdentifier)\n"
+					+ "VALUES (?,?,?,?,?,?)");
+			ps.setInt(1, st.Amount);
+			ps.setTimestamp(2, new Timestamp(new java.util.Date().getTime()));
+			ps.setString(3, st.Memo);
+			ps.setBoolean(4, false);
+			ps.setString(5, st.ISSN);
+			ps.setString(6, st.ToIdentifier);
+			ps.executeUpdate();
+			
+			ElectronicAddress ea = new ElectronicAddress();
+			ea.Identifier = st.ToIdentifier;
+			String toSSN = getUserSSNFromElectronicAddress(ea); 
+			if (toSSN != null) {
+				ps = con.prepareStatement(
+						"UPDATE UserAccount\n"
+						+ "SET Balance=Balance+?\n"
+						+ "WHERE SSN=?");
+				ps.setInt(1, st.Amount);
+				ps.setString(2, toSSN);
+				ps.executeUpdate();
+			}
+			
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean canCancelSendPayment(int STID) {
+		try {
+			PreparedStatement ps = con.prepareStatement("SELECT EXISTS (\n"
+					+ "SELECT * FROM SendTransaction\n"
+					+ "WHERE STID=?\n"
+					+ "AND TIMESTAMPDIFF(MINUTE,DateInitialized,NOW()) < " + EPConstants.CANCELLATION_WINDOW_MINUTES + "\n"
+					+ ")");
+			ResultSet r = ps.executeQuery();
+			boolean exists = r.first() && r.getBoolean(1);
+			
+			r.close();
+			con.commit();
+			
+			return exists;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public void cancelSendPayment(int STID) {
+		try {
+			PreparedStatement ps = con.prepareStatement("UPDATE SendTransaction SET Cancelled=1 WHERE STID=?");
+			ps.setInt(1, STID);
+			ps.executeUpdate();
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean userHitSendLimit(SendTransaction st) {
+		try {
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT SUM(Amount) \n"
+					+ "FROM SendTransaction \n"
+					+ "WHERE ISSN=? AND TIMESTAMPDIFF(DAY,DateInitialized,NOW()) < 7 AND Cancelled=0");
+			ps.setString(1, st.ISSN);
+			ResultSet r = ps.executeQuery();
+			r.first();
+			int amountSentThisWeek = r.getInt(1);
+			r.close();
+			con.commit();
+			
+			if (amountSentThisWeek + st.Amount > EPConstants.WEEKLY_TRANSFER_LIMIT_VERIFIED) {
+				return true;
+			}
+			return false;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 }

@@ -1,5 +1,5 @@
 package models.electronicaddress;
 
-public abstract class ElectronicAddress {
+public class ElectronicAddress {
 	public String Identifier;
 }

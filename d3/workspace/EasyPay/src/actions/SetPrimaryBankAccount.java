@@ -13,7 +13,8 @@ public class SetPrimaryBankAccount extends EasyPayServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		ssn = req.getParameter("ssn");
+		super.doGet(req, resp);
+		
 		BankAccount ba = new BankAccount();
 		ba.BankID = Integer.parseInt(req.getParameter("bankid"));
 		ba.BANumber = Integer.parseInt(req.getParameter("banumber"));

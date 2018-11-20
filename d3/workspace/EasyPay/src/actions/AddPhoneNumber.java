@@ -13,7 +13,8 @@ public class AddPhoneNumber extends EasyPayServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		ssn = req.getParameter("ssn");
+		super.doGet(req, resp);
+		
 		String identifier = req.getParameter("identifier");
 		
 		String redir = "/MyAccount?ssn=" + encParam(ssn);

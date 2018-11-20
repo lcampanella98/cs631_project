@@ -13,7 +13,7 @@ public class AddBankAccount extends EasyPayServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		ssn = req.getParameter("ssn");
+		super.doGet(req, resp);
 		
 		String redir = "/MyAccount?ssn=" + encParam(ssn);
 		String errorParam = "addbankaccounterror";
