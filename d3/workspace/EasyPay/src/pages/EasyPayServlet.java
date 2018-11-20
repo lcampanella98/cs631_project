@@ -40,22 +40,22 @@ public abstract class EasyPayServlet extends EasyPayBaseServlet {
 				+ "<div class=\"collapse navbar-collapse\" id=\"navbarSupportedContent\">\r\n" + 
 				"    <ul class=\"navbar-nav mr-auto\">\r\n" + 
 				"      <li class=\"nav-item\">\r\n" + 
-				"        <a class=\"nav-link\" href=\"/MyAccount?ssn=" + encParam(ssn) + "\">My Account</a>\r\n" + 
+				"        <a class=\"nav-link\" href=\""+BASE_PATH+"MyAccount?ssn=" + encParam(ssn) + "\">My Account</a>\r\n" + 
 				"      </li>\r\n" + 
 				"      <li class=\"nav-item\">\r\n" + 
-				"        <a class=\"nav-link\" href=\"/SendMoney?ssn=" + encParam(ssn) + "\">Send Money</a>\r\n" + 
+				"        <a class=\"nav-link\" href=\""+BASE_PATH+"SendMoney?ssn=" + encParam(ssn) + "\">Send Money</a>\r\n" + 
 				"      </li>\r\n" + 
 				"      <li class=\"nav-item\">\r\n" + 
-				"        <a class=\"nav-link\" href=\"/RequestMoney?ssn=" + encParam(ssn) + "\">Request Money</a>\r\n" + 
+				"        <a class=\"nav-link\" href=\""+BASE_PATH+"RequestMoney?ssn=" + encParam(ssn) + "\">Request Money</a>\r\n" + 
 				"      </li>\r\n" +  
 				"      <li class=\"nav-item\">\r\n" + 
-				"        <a class=\"nav-link\" href=\"/Statements?ssn=" + encParam(ssn) + "\">Statements</a>\r\n" + 
+				"        <a class=\"nav-link\" href=\""+BASE_PATH+"Statements?ssn=" + encParam(ssn) + "\">Statements</a>\r\n" + 
 				"      </li>\r\n" +  
 				"      <li class=\"nav-item\">\r\n" + 
-				"        <a class=\"nav-link\" href=\"/SearchTransactions?ssn=" + encParam(ssn) + "\">Search Transactions</a>\r\n" + 
+				"        <a class=\"nav-link\" href=\""+BASE_PATH+"SearchTransactions?ssn=" + encParam(ssn) + "\">Search Transactions</a>\r\n" + 
 				"      </li>\r\n" +  
 				"      <li class=\"nav-item\">\r\n" + 
-				"        <a class=\"nav-link disabled\" href=\"/SignOut\">Sign Out</a>\r\n" + 
+				"        <a class=\"nav-link disabled\" href=\""+BASE_PATH+"SignOut\">Sign Out</a>\r\n" + 
 				"      </li>\r\n" + 
 				"    </ul>" +
 				"</div>\r\n" + 

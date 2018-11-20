@@ -16,7 +16,7 @@ public class AddEmailAddress extends EasyPayServlet {
 		super.doGet(req, resp);
 		String identifier = req.getParameter("identifier");
 		
-		String redir = "/MyAccount?ssn=" + encParam(ssn);
+		String redir = BASE_PATH + "MyAccount?ssn=" + encParam(ssn);
 		String errorParam = "addemailerror";
 		
 		if (identifier == null || identifier.isEmpty() || !identifier.matches(".+@.+")) {

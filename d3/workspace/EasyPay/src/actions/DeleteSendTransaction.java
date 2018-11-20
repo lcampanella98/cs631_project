@@ -20,7 +20,7 @@ public class DeleteSendTransaction extends EasyPayServlet {
 			_easyPayService.cancelSendPayment(stid);			
 		}
 		
-		resp.sendRedirect("/SendMoney?ssn=" + encParam(ssn));
+		resp.sendRedirect(BASE_PATH + "SendMoney?ssn=" + encParam(ssn));
 	}
 	
 }

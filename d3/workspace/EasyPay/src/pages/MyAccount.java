@@ -118,7 +118,7 @@ public class MyAccount extends EasyPayServlet{
 	
 	void printAddEmailForm() {
 		out.println(
-			"<form method=\"get\" action=\"/AddEmailAddress\" style=\"display:inline-block;\">"
+			"<form method=\"get\" action=\""+BASE_PATH+"AddEmailAddress\" style=\"display:inline-block;\">"
 				+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
 				+ "<input type=\"text\" class=\"form-control\" name=\"identifier\" placeholder=\"Enter an email\" />"
 				+ "<button class=\"btn btn-primary\" type=\"submit\">Add</button>"
@@ -128,7 +128,7 @@ public class MyAccount extends EasyPayServlet{
 	
 	void printAddPhoneForm() {
 		out.println(
-				"<form method=\"get\" action=\"/AddPhoneNumber\" style=\"display:inline-block;\">"
+				"<form method=\"get\" action=\""+BASE_PATH+"AddPhoneNumber\" style=\"display:inline-block;\">"
 					+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
 					+ "<input type=\"text\" class=\"form-control\" name=\"identifier\" placeholder=\"Enter a phone number\" />"
 					+ "<button class=\"btn btn-primary\" type=\"submit\">Add</button>"
@@ -138,7 +138,7 @@ public class MyAccount extends EasyPayServlet{
 	
 	void printAddBankAccountForm() {
 		out.println(
-				"<form method=\"get\" action=\"/AddBankAccount\" style=\"display:inline-block;\">"
+				"<form method=\"get\" action=\""+BASE_PATH+"AddBankAccount\" style=\"display:inline-block;\">"
 					+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
 					+ "<input type=\"number\" class=\"form-control\" name=\"bankid\" placeholder=\"Bank ID\" />"
 					+ "<input type=\"number\" class=\"form-control\" name=\"banumber\" placeholder=\"Account No.\" />"
@@ -176,7 +176,7 @@ public class MyAccount extends EasyPayServlet{
 	}
 	
 	void printDeleteBankAccountForm(BankAccount ba) {
-		out.println("<form method=\"get\" action=\"/DeleteBankAccount\" style=\"display:inline-block;\">"
+		out.println("<form method=\"get\" action=\""+BASE_PATH+"DeleteBankAccount\" style=\"display:inline-block;\">"
 				+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
 				+ "<input type=\"hidden\" name=\"bankid\" value=\"" + ba.BankID + "\" />"
 				+ "<input type=\"hidden\" name=\"banumber\" value=\"" + ba.BANumber + "\" />"
@@ -185,7 +185,7 @@ public class MyAccount extends EasyPayServlet{
 	}
 	
 	void printSetPrimaryBankAccountForm(BankAccount ba) {
-		out.println("<form method=\"get\" action=\"/SetPrimaryBankAccount\" style=\"display:inline-block;\">"
+		out.println("<form method=\"get\" action=\""+BASE_PATH+"SetPrimaryBankAccount\" style=\"display:inline-block;\">"
 				+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
 				+ "<input type=\"hidden\" name=\"bankid\" value=\"" + ba.BankID + "\" />"
 				+ "<input type=\"hidden\" name=\"banumber\" value=\"" + ba.BANumber + "\" />"
@@ -194,7 +194,7 @@ public class MyAccount extends EasyPayServlet{
 	}
 
 	void printDeleteElectronicAddressForm(ElectronicAddress ea) {
-		out.println("<form method=\"get\" action=\"/DeleteElectronicAddress\" style=\"display:inline-block;\">"
+		out.println("<form method=\"get\" action=\""+BASE_PATH+"DeleteElectronicAddress\" style=\"display:inline-block;\">"
 							+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
 							+ "<input type=\"hidden\" name=\"identifier\" value=\"" + ea.Identifier + "\" />"
 							+ "<button class=\"btn btn-sm btn-danger\" type=\"submit\">Delete</button>"

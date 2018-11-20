@@ -21,7 +21,7 @@ public class SetPrimaryBankAccount extends EasyPayServlet {
 		
 		_easyPayService.setPrimaryBankAccount(ba, ssn);
 		
-		resp.sendRedirect("/MyAccount?ssn=" + encParam(ssn));
+		resp.sendRedirect(BASE_PATH + "MyAccount?ssn=" + encParam(ssn));
 	}
 	
 }

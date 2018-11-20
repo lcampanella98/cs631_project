@@ -21,7 +21,7 @@ public class SignIn extends EasyPayBaseServlet {
 			// try to sign in
 			if (_easyPayService.getUserAccountFromSSN(ssn) != null) {
 				// we found the user
-				resp.sendRedirect("/MyAccount?ssn=" + encParam(ssn));
+				resp.sendRedirect(BASE_PATH + "MyAccount?ssn=" + encParam(ssn));
 				return;
 			} else {
 				invalidUser = true;
@@ -30,7 +30,7 @@ public class SignIn extends EasyPayBaseServlet {
 		
 		printPreHTML();
 		out.println("<div style=\"text-align:center;\">"
-						+ "<form method=\"get\" action=\"/SignIn\" style=\"display:inline-block;\">"
+						+ "<form method=\"get\" action=\""+BASE_PATH+"SignIn\" style=\"display:inline-block;\">"
 							+ "<input type=\"text\" class=\"form-control\" name=\"ssn\" placeholder=\"Enter SSN\" />"
 							+ "<button style=\"margin-top:15px;\" class=\"btn btn-primary\" type=\"submit\">Sign In</button>"
 				);

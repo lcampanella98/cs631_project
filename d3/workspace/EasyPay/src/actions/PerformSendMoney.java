@@ -18,7 +18,7 @@ public class PerformSendMoney extends EasyPayServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		super.doGet(req, resp);
 		
-		String redir = "/SendMoney?ssn=" + encParam(ssn);
+		String redir = BASE_PATH + "SendMoney?ssn=" + encParam(ssn);
 		String errorParam = "sendmoneyerror";
 		
 		SendTransaction st = new SendTransaction();

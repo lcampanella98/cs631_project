@@ -15,7 +15,7 @@ public class AddBankAccount extends EasyPayServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		super.doGet(req, resp);
 		
-		String redir = "/MyAccount?ssn=" + encParam(ssn);
+		String redir = BASE_PATH + "MyAccount?ssn=" + encParam(ssn);
 		String errorParam = "addbankaccounterror";
 		
 		BankAccount ba = new BankAccount();
