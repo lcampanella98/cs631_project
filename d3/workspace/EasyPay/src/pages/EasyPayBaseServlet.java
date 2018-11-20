@@ -29,12 +29,10 @@ public abstract class EasyPayBaseServlet extends HttpServlet {
 	public EasyPayBaseServlet() {}
 	
 	public void init() throws ServletException {
-		_easyPayService = new EasyPayService();
-
+		
 	}
 	
 	public void destroy() {
-		_easyPayService.closeConnection();
 	}
 
 	
@@ -45,6 +43,7 @@ public abstract class EasyPayBaseServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		out = resp.getWriter();
+		_easyPayService = new EasyPayService();
 	}
 	
 	protected void printPreHTML() {
