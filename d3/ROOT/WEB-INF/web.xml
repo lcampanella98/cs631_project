@@ -33,12 +33,12 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/SignIn</url-pattern>
+   <url-pattern>/webapps8/SignIn</url-pattern>
    <servlet-name>SignIn</servlet-name>
   </servlet-mapping>
 
   <servlet-mapping>
-   <url-pattern></url-pattern>
+   <url-pattern>/webapps8</url-pattern>
    <servlet-name>SignIn</servlet-name>
   </servlet-mapping>
   
@@ -48,7 +48,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/MyAccount</url-pattern>
+   <url-pattern>/webapps8/MyAccount</url-pattern>
    <servlet-name>MyAccount</servlet-name>
   </servlet-mapping>
   
@@ -58,7 +58,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/DeleteElectronicAddress</url-pattern>
+   <url-pattern>/webapps8/DeleteElectronicAddress</url-pattern>
    <servlet-name>DeleteElectronicAddress</servlet-name>
   </servlet-mapping>
 
@@ -68,7 +68,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/AddEmailAddress</url-pattern>
+   <url-pattern>/webapps8/AddEmailAddress</url-pattern>
    <servlet-name>AddEmailAddress</servlet-name>
   </servlet-mapping>
 
@@ -78,7 +78,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/AddPhoneNumber</url-pattern>
+   <url-pattern>/webapps8/AddPhoneNumber</url-pattern>
    <servlet-name>AddPhoneNumber</servlet-name>
   </servlet-mapping>
   
@@ -88,7 +88,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/AddBankAccount</url-pattern>
+   <url-pattern>/webapps8/AddBankAccount</url-pattern>
    <servlet-name>AddBankAccount</servlet-name>
   </servlet-mapping>
   
@@ -98,7 +98,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/DeleteBankAccount</url-pattern>
+   <url-pattern>/webapps8/DeleteBankAccount</url-pattern>
    <servlet-name>DeleteBankAccount</servlet-name>
   </servlet-mapping>
 
@@ -108,7 +108,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/SetPrimaryBankAccount</url-pattern>
+   <url-pattern>/webapps8/SetPrimaryBankAccount</url-pattern>
    <servlet-name>SetPrimaryBankAccount</servlet-name>
   </servlet-mapping>
 
@@ -118,7 +118,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/SendMoney</url-pattern>
+   <url-pattern>/webapps8/SendMoney</url-pattern>
    <servlet-name>SendMoney</servlet-name>
   </servlet-mapping>
 
@@ -128,7 +128,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/DeleteSendTransaction</url-pattern>
+   <url-pattern>/webapps8/DeleteSendTransaction</url-pattern>
    <servlet-name>DeleteSendTransaction</servlet-name>
   </servlet-mapping>
   
@@ -138,7 +138,7 @@
   </servlet>
 
   <servlet-mapping>
-   <url-pattern>/PerformSendMoney</url-pattern>
+   <url-pattern>/webapps8/PerformSendMoney</url-pattern>
    <servlet-name>PerformSendMoney</servlet-name>
   </servlet-mapping>
 
