@@ -36,6 +36,11 @@
    <url-pattern>/SignIn</url-pattern>
    <servlet-name>SignIn</servlet-name>
   </servlet-mapping>
+
+  <servlet-mapping>
+   <url-pattern></url-pattern>
+   <servlet-name>SignIn</servlet-name>
+  </servlet-mapping>
   
   <servlet>
    <servlet-name>MyAccount</servlet-name>
