@@ -142,5 +142,64 @@
    <servlet-name>PerformSendMoney</servlet-name>
   </servlet-mapping>
 
+  <servlet>
+   <servlet-name>RequestMoney</servlet-name>
+   <servlet-class>pages.RequestMoney</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+   <url-pattern>/webapps8/RequestMoney</url-pattern>
+   <servlet-name>RequestMoney</servlet-name>
+  </servlet-mapping>
+
+  <servlet>
+   <servlet-name>PerformRequestMoney</servlet-name>
+   <servlet-class>actions.PerformRequestMoney</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+   <url-pattern>/webapps8/PerformRequestMoney</url-pattern>
+   <servlet-name>PerformRequestMoney</servlet-name>
+  </servlet-mapping>
+
+  <servlet>
+   <servlet-name>AcceptRequestTransaction</servlet-name>
+   <servlet-class>actions.AcceptRequestTransaction</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+   <url-pattern>/webapps8/AcceptRequestTransaction</url-pattern>
+   <servlet-name>AcceptRequestTransaction</servlet-name>
+  </servlet-mapping>
+  
+  <servlet>
+   <servlet-name>RejectRequestTransaction</servlet-name>
+   <servlet-class>actions.RejectRequestTransaction</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+   <url-pattern>/webapps8/RejectRequestTransaction</url-pattern>
+   <servlet-name>RejectRequestTransaction</servlet-name>
+  </servlet-mapping>
+  
+  <servlet>
+   <servlet-name>SignOut</servlet-name>
+   <servlet-class>pages.SignOut</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+   <url-pattern>/webapps8/SignOut</url-pattern>
+   <servlet-name>SignOut</servlet-name>
+  </servlet-mapping>
+  
+  <servlet>
+   <servlet-name>Statements</servlet-name>
+   <servlet-class>pages.Statements</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+   <url-pattern>/webapps8/Statements</url-pattern>
+   <servlet-name>Statements</servlet-name>
+  </servlet-mapping>
   
 </web-app>
