@@ -33,7 +33,7 @@ public class EasyPayService {
 	private static final String CON_STR = "jdbc:mysql://sql1.njit.edu/lrc22",
 								UNAME = "lrc22", PASS = "I4ZEwI8A3";
 	
-	private static final boolean IS_DEV = true;
+	private static final boolean IS_DEV = false;
 								
 	private Connection con;
 	
