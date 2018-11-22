@@ -10,6 +10,7 @@ import models.BankAccount;
 import models.electronicaddress.ElectronicAddress;
 import models.electronicaddress.EmailAddress;
 import models.electronicaddress.Phone;
+import tools.Methods;
 public class MyAccount extends EasyPayServlet{
 	
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -40,7 +41,7 @@ public class MyAccount extends EasyPayServlet{
 			out.println("<div class=\"row\">");
 			out.println("<h4 class=\"col-sm-4\">SSN: " + user.SSN + "</h4>");
 			out.println("<h4 class=\"col-sm-4\">Name: " + user.Name + "</h4>");
-			out.println("<h4 class=\"col-sm-4\">Balance: $" + user.Balance + "</h4>");
+			out.println("<h4 class=\"col-sm-4\">Balance: " + Methods.formatMoney(user.Balance) + "</h4>");
 			out.println("</div>");
 			
 			out.println("<hr />");
@@ -120,8 +121,12 @@ public class MyAccount extends EasyPayServlet{
 		out.println(
 			"<form method=\"get\" action=\"./AddEmailAddress\" style=\"display:inline-block;\">"
 				+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
-				+ "<input type=\"text\" class=\"form-control\" name=\"identifier\" placeholder=\"Enter an email\" />"
-				+ "<button class=\"btn btn-primary\" type=\"submit\">Add</button>"
+				+ "<div class=\"form-group row\">"
+				+ "  <input type=\"text\" class=\"form-control\" name=\"identifier\" placeholder=\"Enter an email\" />"
+				+ "</div>"
+				+ "<div class=\"form-group row\">"
+				+ "  <button class=\"btn btn-primary\" type=\"submit\">Add</button>"
+				+ "</div>"
 			+ "</form>"
 		);
 	}
@@ -130,8 +135,12 @@ public class MyAccount extends EasyPayServlet{
 		out.println(
 				"<form method=\"get\" action=\"./AddPhoneNumber\" style=\"display:inline-block;\">"
 					+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
-					+ "<input type=\"text\" class=\"form-control\" name=\"identifier\" placeholder=\"Enter a phone number\" />"
-					+ "<button class=\"btn btn-primary\" type=\"submit\">Add</button>"
+					+ "<div class=\"form-group row\">"
+					+ "  <input type=\"text\" class=\"form-control\" name=\"identifier\" placeholder=\"Enter a phone number\" />"
+					+ "</div>"
+					+ "<div class=\"form-group row\">"
+					+ "  <button class=\"btn btn-primary\" type=\"submit\">Add</button>"
+					+ "</div>"
 				+ "</form>"
 			);
 	}
@@ -140,9 +149,15 @@ public class MyAccount extends EasyPayServlet{
 		out.println(
 				"<form method=\"get\" action=\"./AddBankAccount\" style=\"display:inline-block;\">"
 					+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
-					+ "<input type=\"number\" class=\"form-control\" name=\"bankid\" placeholder=\"Bank ID\" />"
-					+ "<input type=\"number\" class=\"form-control\" name=\"banumber\" placeholder=\"Account No.\" />"
-					+ "<button class=\"btn btn-primary\" type=\"submit\">Add</button>"
+					+ "<div class=\"form-group row\">"
+					+ "  <input type=\"number\" class=\"form-control\" name=\"bankid\" placeholder=\"Bank ID\" />"
+					+ "</div>"
+					+ "<div class=\"form-group row\">"
+					+ "  <input type=\"number\" class=\"form-control\" name=\"banumber\" placeholder=\"Account No.\" />"
+					+ "</div>"
+					+ "<div class=\"form-group row\">"
+					+ "  <button class=\"btn btn-primary\" type=\"submit\">Add</button>"
+					+ "</div>"
 				+ "</form>"
 		);
 	}

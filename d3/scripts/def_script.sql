@@ -86,7 +86,7 @@ CREATE TABLE SendTransaction (
 
 CREATE TABLE RequestTransaction (
 	RTID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    Amount INT NOT NULL,
+    TotalAmount INT NOT NULL,
     DateInitialized DATETIME NOT NULL,
     Memo VARCHAR(500),
     ISSN INT NOT NULL,
@@ -99,6 +99,7 @@ CREATE TABLE RequestTransaction (
 CREATE TABLE RequestFrom (
 	RTID INT NOT NULL,
     EIdentifier VARCHAR(100) NOT NULL,
+    Amount INT NOT NULL,
     PRIMARY KEY (RTID, EIdentifier),
     FOREIGN KEY fk_request_id(RTID)
 		REFERENCES RequestTransaction(RTID)

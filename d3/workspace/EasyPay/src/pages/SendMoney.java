@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import models.SendTransaction;
+import tools.Methods;
 
 public class SendMoney extends EasyPayServlet {
 	
@@ -46,16 +47,13 @@ public class SendMoney extends EasyPayServlet {
 		
 		printPostHTML();
 	}
-	
-	private String friendlyDate(Timestamp ts) {
-		return ts.toLocalDateTime().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
-	}
+
 	
 	private void printCancellableSendTransaction(SendTransaction st) {
 		out.println("<tr>"
 						+ "<td>" + st.ToIdentifier + "</td>"
-						+ "<td>$" + st.Amount + "</td>"
-						+ "<td>" + friendlyDate(st.DateInitialized) + "</td>"
+						+ "<td>" + Methods.formatMoney(st.Amount) + "</td>"
+						+ "<td>" + Methods.friendlyDate(st.DateInitialized) + "</td>"
 			);
 		out.println("<td>");
 		printDeleteButton(st);

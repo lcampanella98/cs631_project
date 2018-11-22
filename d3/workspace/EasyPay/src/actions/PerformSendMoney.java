@@ -42,21 +42,11 @@ public class PerformSendMoney extends EasyPayServlet {
 		st.Memo = req.getParameter("memo");
 		// no need to set st.DateInitialized. default is current timestamp in service method
 		
-		// is single payment too big?
-		if (st.Amount > EPConstants.SINGLE_SEND_LIMIT_VERIFIED) {
-			redir += "&" + errorParam + "=" 
-					+ encParam("Single send limit of " + formatMoney(EPConstants.SINGLE_SEND_LIMIT_VERIFIED) + " exceeded");
+		String err = _easyPayService.sendPayment(st);
+		if (err != null) {
+			redir += "&" + errorParam + "=" + encParam(err);
 		}
 		
-		// did user hit weekly limit?
-		if (_easyPayService.userHitSendLimit(st)) {
-			redir += "&" + errorParam + "=" 
-					+ encParam("Weekly transfer limit of " + formatMoney(EPConstants.WEEKLY_TRANSFER_LIMIT_VERIFIED) + " exceeded");
-			resp.sendRedirect(redir);
-			return;
-		}
-		
-		_easyPayService.sendPayment(st);
 		resp.sendRedirect(redir);
 		
 	}
