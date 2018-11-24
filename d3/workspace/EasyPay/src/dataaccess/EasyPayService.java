@@ -33,7 +33,7 @@ public class EasyPayService {
 	private static final String CON_STR = "jdbc:mysql://sql1.njit.edu/lrc22",
 								UNAME = "lrc22", PASS = "I4ZEwI8A3";
 	
-	private static final boolean IS_DEV = false;
+	private static final boolean IS_DEV = true;
 								
 	private Connection con;
 	
@@ -975,7 +975,8 @@ public class EasyPayService {
 					+ "   UNION"
 					+ "   SELECT Identifier FROM Phone WHERE USSN=?"
 					+ " )"
-					+ "GROUP BY MONTH(DateInitialized), YEAR(DateInitialized)"
+					+ " AND Cancelled=0 "
+					+ " GROUP BY MONTH(DateInitialized), YEAR(DateInitialized)"
 			);
 			ps.setString(1, ssn);
 			ps.setString(2, ssn);
@@ -985,13 +986,13 @@ public class EasyPayService {
 				date = new MonthYear(r.getInt("Month"), r.getInt("Year"));
 				if (stmt.containsKey(date)) {
 					ts = stmt.get(date);
-					ts.amountCancelledSending = r.getInt("AmountReceived");
-					ts.numTransactionsCancelledSending = r.getInt("NumTransactionsReceived");
+					ts.amountReceived = r.getInt("AmountReceived");
+					ts.numTransactionsReceived = r.getInt("NumTransactionsReceived");
 				} else {
 					ts = new TransactionStatement();
 					ts.date = date;
-					ts.amountCancelledSending = r.getInt("AmountReceived");
-					ts.numTransactionsCancelledSending = r.getInt("NumTransactionsReceived");
+					ts.amountReceived = r.getInt("AmountReceived");
+					ts.numTransactionsReceived = r.getInt("NumTransactionsReceived");
 					stmt.put(ts.date, ts);
 				}
 			}
