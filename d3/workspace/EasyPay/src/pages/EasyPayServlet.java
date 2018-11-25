@@ -56,7 +56,7 @@ public abstract class EasyPayServlet extends EasyPayBaseServlet {
 				"        <a class=\"nav-link\" href=\"./SearchTransactions?ssn=" + encParam(ssn) + "\">Search Transactions</a>\r\n" + 
 				"      </li>\r\n" +  
 				"      <li class=\"nav-item\">\r\n" + 
-				"        <a class=\"nav-link disabled\" href=\"./SignOut\">Sign Out</a>\r\n" + 
+				"        <a class=\"nav-link\" href=\"./SignOut\">Sign Out</a>\r\n" + 
 				"      </li>\r\n" + 
 				"    </ul>" +
 				"</div>\r\n" + 

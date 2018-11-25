@@ -6,11 +6,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import config.EPConstants;
 import models.SendTransaction;
 import models.electronicaddress.EmailAddress;
 import models.electronicaddress.Phone;
 import pages.EasyPayServlet;
+import tools.Methods;
 
 public class PerformSendMoney extends EasyPayServlet {
 	
@@ -28,13 +28,13 @@ public class PerformSendMoney extends EasyPayServlet {
 		email.Identifier = req.getParameter("toemail");
 		Phone phone = new Phone();
 		phone.Identifier = req.getParameter("tophone");
-		if (!email.Identifier.trim().isEmpty()) {
+		if (Methods.IsValidEmail(email.Identifier)) {
 			st.ToIdentifier = email.Identifier;
 		}
-		else if (!phone.Identifier.trim().isEmpty()) {
+		else if (Methods.IsValidPhone(phone.Identifier)) {
 			st.ToIdentifier = phone.Identifier;
 		} else {
-			redir += "&" + errorParam + "=" + encParam("Must specify an email or phone");
+			redir += "&" + errorParam + "=" + encParam("Must specify a VALID email or phone");
 			resp.sendRedirect(redir);
 			return;
 		}

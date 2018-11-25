@@ -202,4 +202,25 @@
    <servlet-name>Statements</servlet-name>
   </servlet-mapping>
   
+  <servlet>
+   <servlet-name>SearchTransactions</servlet-name>
+   <servlet-class>pages.SearchTransactions</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+   <url-pattern>/webapps8/SearchTransactions</url-pattern>
+   <servlet-name>SearchTransactions</servlet-name>
+  </servlet-mapping>
+
+  <servlet>
+   <servlet-name>CreateAccount</servlet-name>
+   <servlet-class>pages.CreateAccount</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+   <url-pattern>/webapps8/CreateAccount</url-pattern>
+   <servlet-name>CreateAccount</servlet-name>
+  </servlet-mapping>
+
+  
 </web-app>

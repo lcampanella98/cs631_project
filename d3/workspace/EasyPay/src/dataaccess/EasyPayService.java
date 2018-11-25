@@ -72,6 +72,68 @@ public class EasyPayService {
 		}
 	}
 	
+	public void createUserAccount(UserAccount u, List<ElectronicAddress> electronicAddresses) {
+		try {
+			if (!bankAccountExists(u.primaryAccount)) {
+				addBankAccount(u.primaryAccount);
+			}
+			PreparedStatement ps = con.prepareStatement(
+					"INSERT INTO UserAccount (SSN, Name, Balance, PBankID, PBANumber)"
+					+ " VALUES (?,?,?,?,?)");
+			ps.setString(1, u.SSN);
+			ps.setString(2, u.Name);
+			ps.setInt(3, u.Balance);
+			ps.setInt(4, u.primaryAccount.BankID);
+			ps.setInt(5, u.primaryAccount.BANumber);
+			ps.executeUpdate();
+			
+			for (ElectronicAddress ea : electronicAddresses) {
+				addElectronicAddress(ea);
+			}
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void getFundsSentToNewUser(ElectronicAddress ea) {
+		try {
+			String ssn = (ea instanceof EmailAddress ? ((EmailAddress)ea).USSN : ((Phone)ea).USSN);
+			
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT STID,Amount FROM SendTransaction"
+					+ " WHERE IsToNewUser=1 AND ToNewUserIdentifier=? AND Cancelled=0"
+					+ " AND TIMESTAMPDIFF(DAY,DateInitialized,NOW()) < " + EPConstants.NEW_USER_PAYMENT_ACCEPT_WINDOW_DAYS
+					);
+			ps.setString(1, ea.Identifier);
+			ResultSet r = ps.executeQuery();
+			int addBalance = 0;
+			PreparedStatement updateTransaction = con.prepareStatement(
+					"UPDATE SendTransaction"
+							+ " SET IsToNewUser=0, ToIdentifier=ToNewUserIdentifier"
+							+ " WHERE STID=?"
+					);
+			while (r.next()) {
+				int STID = r.getInt("STID");
+				int amount = r.getInt("Amount");
+				updateTransaction.setInt(1, STID);
+				updateTransaction.executeUpdate();
+				addBalance += amount;
+			}
+			r.close();
+			ps = con.prepareStatement("UPDATE UserAccount SET Balance=Balance+? WHERE SSN=?");
+			ps.setInt(1, addBalance);
+			ps.setString(2, ssn);
+			ps.executeUpdate();
+			
+			con.commit();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public UserAccount getUserAccountFromSSN(String ssn) {
 		try {
 			PreparedStatement ps = con.prepareStatement("SELECT * FROM UserAccount WHERE SSN=?");
@@ -373,6 +435,9 @@ public class EasyPayService {
 			}
 			
 			ps.executeUpdate();
+			
+			getFundsSentToNewUser(ea);
+			
 			con.commit();
 		}
 		catch (SQLException e) {
@@ -553,6 +618,10 @@ public class EasyPayService {
 				st.Memo = r.getString("Memo");
 				st.STID = r.getInt("STID");
 				st.ToIdentifier = r.getString("ToIdentifier");
+				st.IsToNewUser = r.getBoolean("IsToNewUser");
+				st.ToNewUserIdentifier = r.getString("ToNewUserIdentifier");
+				st.FromUser = getUserAccountFromSSN(st.ISSN);
+				st.ToUser = getUserAccountFromElectronicAddress(st.ToIdentifier);
 				l.add(st);
 			}
 			r.close();
@@ -582,36 +651,44 @@ public class EasyPayService {
 			return "Weekly transfer limit of " + Methods.formatMoney(EPConstants.WEEKLY_TRANSFER_LIMIT_VERIFIED) + " exceeded";
 		}
 		
+		boolean newUser = getUserAccountFromElectronicAddress(st.ToIdentifier) == null;
+		
 		try {
 			PreparedStatement ps = con.prepareStatement(
-					"INSERT INTO SendTransaction (Amount,DateInitialized,Memo,Cancelled,ISSN,ToIdentifier)\n"
-					+ "VALUES (?,?,?,?,?,?)");
+					"INSERT INTO SendTransaction "
+					+ " (Amount,DateInitialized,Memo,Cancelled,ISSN,ToIdentifier,IsToNewUser,ToNewUserIdentifier)\n"
+					+ "VALUES (?,?,?,?,?,?,?,?)");
 			ps.setInt(1, st.Amount);
 			ps.setTimestamp(2, new Timestamp(new java.util.Date().getTime()));
 			ps.setString(3, st.Memo);
 			ps.setBoolean(4, false);
 			ps.setString(5, st.ISSN);
-			ps.setString(6, st.ToIdentifier);
+			ps.setString(6, newUser ? null : st.ToIdentifier);
+			ps.setBoolean(7, newUser);
+			ps.setString(8, newUser ? st.ToIdentifier : null);
+			
 			ps.executeUpdate();
 			
-			String toSSN = getUserSSNFromElectronicAddress(new ElectronicAddress(st.ToIdentifier));
-			if (toSSN != null) {
-				ps = con.prepareStatement(
-						"UPDATE UserAccount\n"
-						+ "SET Balance=Balance+?\n"
-						+ "WHERE SSN=?");
-				ps.setInt(1, st.Amount);
-				ps.setString(2, toSSN);
-				ps.executeUpdate();
-				
-				ps = con.prepareStatement(
-						"UPDATE UserAccount"
-						+ " SET Balance=Balance-?"
-						+ " WHERE SSN=?"
-				);
-				ps.setInt(1, st.Amount);
-				ps.setString(2, st.ISSN);
-				ps.executeUpdate();
+			if (!newUser) {
+				String toSSN = getUserSSNFromElectronicAddress(new ElectronicAddress(st.ToIdentifier));
+				if (toSSN != null) {
+					ps = con.prepareStatement(
+							"UPDATE UserAccount\n"
+							+ "SET Balance=Balance+?\n"
+							+ "WHERE SSN=?");
+					ps.setInt(1, st.Amount);
+					ps.setString(2, toSSN);
+					ps.executeUpdate();
+					
+					ps = con.prepareStatement(
+							"UPDATE UserAccount"
+							+ " SET Balance=Balance-?"
+							+ " WHERE SSN=?"
+					);
+					ps.setInt(1, st.Amount);
+					ps.setString(2, st.ISSN);
+					ps.executeUpdate();
+				}
 			}
 			
 			con.commit();
@@ -666,7 +743,8 @@ public class EasyPayService {
 	
 	public SendTransaction getSendTransaction(int STID) {
 		try {
-			PreparedStatement ps = con.prepareStatement("SELECT * FROM SendTransaction WHERE STID=?");
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT * FROM SendTransaction INNER JOIN UserAccount ON SSN=ISSN WHERE STID=?");
 			ps.setInt(1, STID);
 			
 			ResultSet r = ps.executeQuery();
@@ -678,6 +756,10 @@ public class EasyPayService {
 				st.DateInitialized = r.getTimestamp("DateInitialized");
 				st.ISSN = r.getString("ISSN");
 				st.ToIdentifier = r.getString("ToIdentifier");
+				st.IsToNewUser = r.getBoolean("IsToNewUser");
+				st.ToNewUserIdentifier = r.getString("ToNewUserIdentifier");
+				st.FromUser = getUserAccountFromResultSetRow(r);
+				st.ToUser = getUserAccountFromElectronicAddress(st.ToIdentifier);
 			}
 			r.close();
 			con.commit();
@@ -778,6 +860,7 @@ public class EasyPayService {
 				rt.From = new ArrayList<RequestFrom>();
 					rf = new RequestFrom();
 					rf.EIdentifier = r.getString("EIdentifier");
+					rf.Amount = r.getInt("Amount");
 					rf.User = getUserAccountFromElectronicAddress(rf.EIdentifier);
 					rt.From.add(rf);
 				
@@ -1008,6 +1091,122 @@ public class EasyPayService {
 		return null;
 	}
 	
+	/* search */
+	public List<SendTransaction> searchSendTransactions(String ssn, String q) {
+		try {
+			q = "%" + q + "%";
+			String sql = "SELECT * FROM SendTransaction INNER JOIN UserAccount ON SSN=ISSN"
+					+ " WHERE (ISSN=? OR ToIdentifier IN "
+					+ " 			(SELECT Identifier FROM EmailAddress WHERE USSN=? "
+					+ "					UNION"
+					+ "				 SELECT Identifier FROM Phone WHERE USSN=?)"
+					+ " )"
+					+ " AND Cancelled=0"
+					+ " AND (Amount LIKE ?"
+					+ " OR DateInitialized LIKE ?"
+					+ " OR ToIdentifier LIKE ?"
+					+ " OR ToNewUserIdentifier LIKE ?"
+					+ " OR Memo LIKE ? "
+					+ " OR Name LIKE ?)"
+					+ " ORDER BY STID DESC";
+			PreparedStatement ps = con.prepareStatement(sql);
+			
+			ps.setString(1, ssn);
+			ps.setString(2, ssn);
+			ps.setString(3, ssn);
+			ps.setString(4, q);
+			ps.setString(5, q);
+			ps.setString(6, q);
+			ps.setString(7, q);
+			ps.setString(8, q);
+			ps.setString(9, q);
+			
+			ResultSet r = ps.executeQuery();
+			
+			List<SendTransaction> transactions = new ArrayList<>();
+			SendTransaction st;
+			while (r.next()) {
+				st = new SendTransaction();
+				st.Amount = r.getInt("Amount");
+				st.Cancelled = r.getBoolean("Cancelled");
+				st.DateInitialized = r.getTimestamp("DateInitialized");
+				st.ISSN = r.getString("ISSN");
+				st.Memo = r.getString("Memo");
+				st.ToIdentifier = r.getString("ToIdentifier");
+				st.IsToNewUser = r.getBoolean("IsToNewUser");
+				st.ToNewUserIdentifier = r.getString("ToNewUserIdentifier");
+				st.FromUser = getUserAccountFromResultSetRow(r);
+				st.ToUser = getUserAccountFromElectronicAddress(st.ToIdentifier);
+				transactions.add(st);
+			}
+			r.close();
+			con.commit();
+			
+			return transactions;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
+	public List<RequestTransaction> searchRequestTransactions(String ssn, String q) {
+		try {
+			q = "%" + q + "%";
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT * FROM RequestFrom NATURAL JOIN RequestTransaction INNER JOIN UserAccount ON ISSN=SSN \n"
+					+ " WHERE EIdentifier IN ("
+					+ "		SELECT Identifier FROM EmailAddress WHERE USSN=?\n"
+					+ "		UNION\n"
+					+ "		SELECT Identifier FROM Phone WHERE USSN=?"
+					+ "	)"
+					+ " AND (DateInitialized LIKE ?"
+					+ " OR Memo LIKE ?"
+					+ " OR Amount LIKE ?"
+					+ " OR EIdentifier LIKE ?"
+					+ " OR Name LIKE ? )"
+					+ " ORDER BY RTID DESC");
+			ps.setString(1, ssn);
+			ps.setString(2, ssn);
+			ps.setString(3, q);
+			ps.setString(4, q);
+			ps.setString(5, q);
+			ps.setString(6, q);
+			ps.setString(7, q);
+			
+			ResultSet r = ps.executeQuery();
+			List<RequestTransaction> l = new ArrayList<RequestTransaction>();
+			RequestTransaction rt;
+			RequestFrom rf;
+			while (r.next()) {
+				rt = new RequestTransaction();
+				rt.TotalAmount = r.getInt("TotalAmount");
+				rt.DateInitialized = r.getTimestamp("DateInitialized");
+				rt.ISSN = r.getString("ISSN");
+				rt.Memo = r.getString("Memo");
+				rt.RTID = r.getInt("RTID");
+				
+				rt.IUser = getUserAccountFromResultSetRow(r);
+				
+				rt.From = new ArrayList<RequestFrom>();
+					rf = new RequestFrom();
+					rf.EIdentifier = r.getString("EIdentifier");
+					rf.Amount = r.getInt("Amount");
+					rf.User = getUserAccountFromElectronicAddress(rf.EIdentifier);
+					rt.From.add(rf);
+				
+				l.add(rt);
+			}
+			r.close();
+			con.commit();
+			
+			return l;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+		
+	}
 	
 }

@@ -72,7 +72,9 @@ CREATE TABLE SendTransaction (
 	Memo VARCHAR(500),
 	Cancelled BIT NOT NULL DEFAULT 0,
 	ISSN INT NOT NULL,
-	ToIdentifier VARCHAR(100) NOT NULL,
+	ToIdentifier VARCHAR(100),
+	IsToNewUser BIT NOT NULL,
+	ToNewUserIdentifier VARCHAR(100),
 	FOREIGN KEY fk_send_initiator_ssn(ISSN)
 		REFERENCES UserAccount(SSN)
 		ON UPDATE CASCADE
@@ -104,10 +106,7 @@ CREATE TABLE RequestFrom (
     FOREIGN KEY fk_request_id(RTID)
 		REFERENCES RequestTransaction(RTID)
         ON UPDATE CASCADE
-        ON DELETE CASCADE,
-	FOREIGN KEY fk_request_to_identifier(EIdentifier)
-		REFERENCES ElectronicAddress(Identifier)
-		ON UPDATE CASCADE
         ON DELETE CASCADE
 );
+
 

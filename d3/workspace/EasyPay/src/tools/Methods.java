@@ -26,5 +26,13 @@ public final class Methods {
 		if (i == 1) return s;
 		return s + "s";
 	}
+	
+	public static boolean IsValidEmail(String email) {
+		return email != null && email.matches(".+@.+");		
+	}
+	
+	public static boolean IsValidPhone(String phone) {
+		return phone != null && phone.matches("\\d[\\d\\s-]*");
+	}
 
 }

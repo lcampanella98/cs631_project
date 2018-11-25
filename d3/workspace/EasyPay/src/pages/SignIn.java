@@ -37,7 +37,10 @@ public class SignIn extends EasyPayBaseServlet {
 		if (invalidUser) {
 			out.println("<p class=\"text-danger\">SSN not in system</p>");
 		}
-		out.println("</form></div>");
+		out.println("</form>");
+		out.println("<p>OR</p>");
+		out.println("<a href=\"./CreateAccount\"><button type=\"button\" class=\"btn btn-default\">Create Account</button></a>");
+		out.println("</div>");
 		printPostHTML();
 	}
 	

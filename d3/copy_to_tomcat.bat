@@ -1,0 +1,1 @@
+XCOPY /E /Y workspace\EasyPay\bin C:\apache-tomcat-9.0.12\webapps\ROOT\WEB-INF\classes

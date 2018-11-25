@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import models.electronicaddress.Phone;
 import pages.EasyPayServlet;
+import tools.Methods;
 
 public class AddPhoneNumber extends EasyPayServlet {
 	
@@ -20,7 +21,7 @@ public class AddPhoneNumber extends EasyPayServlet {
 		String redir = "./MyAccount?ssn=" + encParam(ssn);
 		String errorParam = "addphoneerror";
 		
-		if (identifier == null || identifier.isEmpty() || !identifier.matches("\\d[\\d\\s-]*")) {
+		if (!Methods.IsValidPhone(identifier)) {
 			redir += "&" + errorParam + "=" + encParam("Phone number invalid");
 		}
 		else

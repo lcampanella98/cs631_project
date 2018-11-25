@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import models.electronicaddress.EmailAddress;
 import pages.EasyPayServlet;
+import tools.Methods;
 
 public class AddEmailAddress extends EasyPayServlet {
 	
@@ -19,7 +20,7 @@ public class AddEmailAddress extends EasyPayServlet {
 		String redir = "./MyAccount?ssn=" + encParam(ssn);
 		String errorParam = "addemailerror";
 		
-		if (identifier == null || identifier.isEmpty() || !identifier.matches(".+@.+")) {
+		if (!Methods.IsValidEmail(identifier)) {
 			redir += "&" + errorParam + "=" + encParam("Email address invalid");
 		}
 		else 

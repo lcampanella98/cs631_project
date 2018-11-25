@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import models.RequestTransaction;
-import tools.Methods;
+import renderers.TransactionRenderer;
 
 public class RequestMoney extends EasyPayServlet {
 	
@@ -35,55 +35,12 @@ public class RequestMoney extends EasyPayServlet {
 			out.println("<p class=\"text-danger\">" + req.getParameter("acceptrequesterror") + "</p>");
 		}
 		
-		out.println(
-				"<table class=\"table table-striped table-bordered\">"
-				+ "<thead>"
-					+ "<th>From</th>"
-					+ "<th>Amount</th>"
-					+ "<th>Time</th>"
-					+ "<th>Memo</th>"
-					+ "<th></th>"
-				+ "</thead>");
-		out.println("<tbody>");
-		for (RequestTransaction rt : requests) printRequestTransaction(rt);
-		out.println("</tbody>");
+		new TransactionRenderer(ssn, out).renderRequestTransactionsTable(requests, true);
 		
 		printPostHTML();
 	}
 	
-	private void printRequestTransaction(RequestTransaction rt) {
-		out.println("<tr>"
-						+ "<td>" + rt.IUser.Name + "</td>"
-						+ "<td>" + Methods.formatMoney(rt.TotalAmount) + "</td>"
-						+ "<td>" + Methods.friendlyDate(rt.DateInitialized) + "</td>"
-						+ "<td>" + ((rt.Memo != null) ? rt.Memo : "") + "</td>"
-			);
-		out.println("<td>");
-		printAcceptButton(rt);
-		printRejectButton(rt);
-		out.println("</td>");
-		
-		out.println("</tr>");
-	}
-	
-	private void printRejectButton(RequestTransaction rt) {
-		out.println("<form method=\"get\" action=\"./RejectRequestTransaction\" style=\"display:inline-block;\">"
-							+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
-							+ "<input type=\"hidden\" name=\"rtid\" value=\"" + rt.RTID + "\" />"
-							+ "<input type=\"hidden\" name=\"eidentifier\" value=\"" + rt.From.get(0).EIdentifier + "\" />"
-							+ "<button class=\"btn btn-sm btn-danger\" type=\"submit\">Reject</button>"
-						+ "</form>");
-	}
-	
-	private void printAcceptButton(RequestTransaction rt) {
-		out.println("<form method=\"get\" action=\"./AcceptRequestTransaction\" style=\"display:inline-block;\">"
-				+ "<input type=\"hidden\" name=\"ssn\" value=\"" + ssn + "\" />"
-				+ "<input type=\"hidden\" name=\"rtid\" value=\"" + rt.RTID + "\" />"
-				+ "<input type=\"hidden\" name=\"eidentifier\" value=\"" + rt.From.get(0).EIdentifier + "\" />"
-				+ "<button class=\"btn btn-sm btn-primary\" type=\"submit\">Accept</button>"
-			+ "</form>");
-	}
-	
+
 	private void printRequestForm() {
 		String formGroup = "'"
 				+ "<div class=\"form-group row\" id=\"form-group-recipient-' + id + '\">"

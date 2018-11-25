@@ -10,4 +10,8 @@ public class SendTransaction {
 	public boolean Cancelled;
 	public String ISSN;
 	public String ToIdentifier;
+	public boolean IsToNewUser;
+	public String ToNewUserIdentifier;
+	public UserAccount FromUser;
+	public UserAccount ToUser;
 }
