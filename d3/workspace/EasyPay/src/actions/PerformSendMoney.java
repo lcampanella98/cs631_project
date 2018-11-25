@@ -23,7 +23,14 @@ public class PerformSendMoney extends EasyPayServlet {
 		
 		SendTransaction st = new SendTransaction();
 		st.ISSN = ssn;
-		st.Amount = Integer.parseInt(req.getParameter("amount"));
+		try {
+			st.Amount = Integer.parseInt(req.getParameter("amount"));
+		} catch (NumberFormatException e) {
+			redir += "&" + errorParam + "=" + encParam("Invalid amount");
+			resp.sendRedirect(redir);
+			return;
+		}
+		
 		EmailAddress email = new EmailAddress();
 		email.Identifier = req.getParameter("toemail");
 		Phone phone = new Phone();
