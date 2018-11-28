@@ -156,6 +156,17 @@ public class CreateAccount extends EasyPayBaseServlet {
 					+ "</div>"
 				+ "</form>"
 			);
+		out.println(
+			"<div class=\"row\" style=\"margin-top:15px;\">"
+			+ "<a href=\"./SignIn\"><button type=\"button\" class=\"btn btn-default\">Back</button></a>"
+			+ "</div>"
+				);
+		List<UserAccount> allUsers = _easyPayService.getAllUsers();
+		out.println("<div class=\"row\">All SSNs: ");
+		for (UserAccount u : allUsers) {
+			out.println(u.SSN + ",");
+		}
+		out.println("</div>");
 	}
 	
 }

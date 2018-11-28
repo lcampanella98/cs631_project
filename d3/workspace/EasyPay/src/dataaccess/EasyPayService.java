@@ -72,6 +72,21 @@ public class EasyPayService {
 		}
 	}
 	
+	public List<UserAccount> getAllUsers() {
+		try {
+			PreparedStatement ps = con.prepareStatement("SELECT * FROM UserAccount ORDER BY SSN");
+			ResultSet r = ps.executeQuery();
+			List<UserAccount> users = getUserAccountsFromResultSet(r);
+			r.close();
+			con.commit();
+			return users;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public void createUserAccount(UserAccount u, List<ElectronicAddress> electronicAddresses) {
 		try {
 			if (!bankAccountExists(u.primaryAccount)) {
