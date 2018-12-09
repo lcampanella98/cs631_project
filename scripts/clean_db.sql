@@ -1,0 +1,14 @@
+USE lrc22;
+SET FOREIGN_KEY_CHECKS=0;
+START TRANSACTION;
+DELETE FROM BankAccount;
+DELETE FROM ElectronicAddress;
+DELETE FROM EmailAddress;
+DELETE FROM Has_Additional;
+DELETE FROM Phone;
+DELETE FROM RequestFrom;
+DELETE FROM RequestTransaction;
+DELETE FROM SendTransaction;
+DELETE FROM UserAccount;
+COMMIT;
+SET FOREIGN_KEY_CHECKS=1;

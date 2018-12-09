@@ -1,0 +1,25 @@
+mysql -u lrc22 -p -h sql1.njit.edu
+
+#password
+I4ZEwI8A3
+
+
+#connect to mysql
+mysql -u mb529 -p -h sql1.njit.edu
+
+#password
+PsLpeW5n
+
+
+#my database name
+mb529
+
+
+#show databases
+show databases;
+
+#use the database
+
+use DBNAME;
+
+
