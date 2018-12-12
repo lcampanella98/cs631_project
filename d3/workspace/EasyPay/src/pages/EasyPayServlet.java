@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import models.UserAccount;
+import tools.Methods;
 
 public abstract class EasyPayServlet extends EasyPayBaseServlet {
 	/**
@@ -24,6 +25,9 @@ public abstract class EasyPayServlet extends EasyPayBaseServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		super.doGet(req, resp);
 		ssn = req.getParameter("ssn");
+		if (ssn != null && !ssn.isEmpty()) {
+			this.user = _easyPayService.getUserAccountFromSSN(ssn);
+		}
 	}
 	
 	protected void printPreHTML() {
@@ -61,8 +65,14 @@ public abstract class EasyPayServlet extends EasyPayBaseServlet {
 				"    </ul>" +
 				"</div>\r\n" + 
 				"</nav>"
+
 		);
 		out.println("<div class=\"container\">\n" 
+					+ "<div class=\"row\" style=\"margin-top:20px;\">"
+					+ "<h6 class=\"col-sm-4\">SSN: " + user.SSN + "</h6>"
+					+ "<h6 class=\"col-sm-4\">Name: " + user.Name + "</h6>"
+					+ "<h6 class=\"col-sm-4\">Balance: " + Methods.formatMoney(user.Balance) + "</h6>"
+					+ "</div><hr />"
 					+ "<h1 style=\"text-align:center;\">" + title + "</h1><hr />\n"
 		);
 	}

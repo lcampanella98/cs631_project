@@ -9,7 +9,7 @@ import java.time.format.FormatStyle;
 public final class Methods {
 	
 	public static String formatMoney(double money) {
-		DecimalFormat df = new DecimalFormat("#.00");
+		DecimalFormat df = new DecimalFormat("#,###.00");
 		df.setMinimumIntegerDigits(1);
 		return "$" + df.format(money);
 	}

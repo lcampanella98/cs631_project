@@ -22,13 +22,11 @@ public class MyAccount extends EasyPayServlet{
 		List<EmailAddress> emails = null;
 		List<Phone> phones = null;
 		List<BankAccount> otherAccounts = null;
-		if (ssn != null && !ssn.isEmpty()) {
-			this.user = _easyPayService.getUserAccountFromSSN(ssn);
-			if (user != null) {
-				emails = _easyPayService.getUserEmailAddresses(user.SSN);
-				phones = _easyPayService.getUserPhoneNumbers(user.SSN);
-				otherAccounts = _easyPayService.getOtherUserBankAccounts(user.SSN);
-			}
+
+		if (user != null) {
+			emails = _easyPayService.getUserEmailAddresses(user.SSN);
+			phones = _easyPayService.getUserPhoneNumbers(user.SSN);
+			otherAccounts = _easyPayService.getOtherUserBankAccounts(user.SSN);
 		}
 		
 
@@ -38,13 +36,6 @@ public class MyAccount extends EasyPayServlet{
 		}
 		else
 		{
-			out.println("<div class=\"row\">");
-			out.println("<h4 class=\"col-sm-4\">SSN: " + user.SSN + "</h4>");
-			out.println("<h4 class=\"col-sm-4\">Name: " + user.Name + "</h4>");
-			out.println("<h4 class=\"col-sm-4\">Balance: " + Methods.formatMoney(user.Balance) + "</h4>");
-			out.println("</div>");
-			
-			out.println("<hr />");
 			out.println("<div class=\"row\" style=\"margin-top:20px;\">");
 			
 			/* Bank account */

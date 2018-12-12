@@ -656,14 +656,9 @@ public class EasyPayService {
 			return "Insufficient funds";
 		}
 		
-		// is single payment too big?
-		if (st.Amount > EPConstants.SINGLE_SEND_LIMIT_VERIFIED) {
-			return "Single send limit of " + Methods.formatMoney(EPConstants.SINGLE_SEND_LIMIT_VERIFIED) + " exceeded";
-		}
-		
 		// did user hit weekly limit?
 		if (userHitSendLimit(st)) {
-			return "Weekly transfer limit of " + Methods.formatMoney(EPConstants.WEEKLY_TRANSFER_LIMIT_VERIFIED) + " exceeded";
+			return "Weekly transfer limit of " + Methods.formatMoney(EPConstants.WEEKLY_PAYMENT_LIMIT) + " exceeded";
 		}
 		
 		boolean newUser = getUserAccountFromElectronicAddress(st.ToIdentifier) == null;
@@ -832,7 +827,7 @@ public class EasyPayService {
 			r.close();
 			con.commit();
 			
-			if (amountSentThisWeek + st.Amount > EPConstants.WEEKLY_TRANSFER_LIMIT_VERIFIED) {
+			if (amountSentThisWeek + st.Amount > EPConstants.WEEKLY_PAYMENT_LIMIT) {
 				return true;
 			}
 			return false;
