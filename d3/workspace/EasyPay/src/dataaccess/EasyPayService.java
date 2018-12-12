@@ -997,6 +997,87 @@ public class EasyPayService {
 		}
 	}
 	
+	public SortedMap<MonthYear, TransactionStatement> getMonthlyStatement(List<SendTransaction> sends, String ssn) {
+		try {
+			SortedMap<MonthYear, TransactionStatement> stmt = new TreeMap<>();
+			if (sends.isEmpty()) return stmt;
+			
+			List<String> idsList = new ArrayList<String>();
+			for (SendTransaction st : sends) idsList.add(String.valueOf(st.STID));
+			
+			String ids = String.join(",", idsList);
+			PreparedStatement ps = con.prepareStatement(
+					"  SELECT MONTH(DateInitialized) as Month"
+					+ "    , YEAR(DateInitialized) as Year"
+					+ "    , SUM(Amount) as AmountSent"
+					+ "    , COUNT(*) as NumTransactionsSent"
+					+ " FROM SendTransaction"
+					+ " WHERE ISSN=?"
+					+ " AND STID IN (" + ids + ")"
+					+ " GROUP BY MONTH(DateInitialized), YEAR(DateInitialized) "
+			);
+
+			ps.setString(1, ssn);
+			ResultSet r = ps.executeQuery();
+			
+			TransactionStatement ts;
+			while (r.next()) {
+				ts = new TransactionStatement();
+				ts.date = new MonthYear();
+					ts.date.month = r.getInt("Month");
+					ts.date.year = r.getInt("Year");
+				ts.amountSent = r.getInt("AmountSent");
+				ts.numTransactionsSent = r.getInt("NumTransactionsSent");
+				stmt.put(ts.date, ts);
+			}
+			r.close();
+
+			ps = con.prepareStatement(
+					"  SELECT MONTH(DateInitialized) as Month"
+					+ "     , YEAR(DateInitialized) as Year"
+					+ "     , SUM(Amount) as AmountReceived"
+					+ "     , COUNT(*) as NumTransactionsReceived"
+					+ " FROM SendTransaction"
+					+ " WHERE ToIdentifier IN ("
+					+ "   SELECT Identifier FROM EmailAddress WHERE USSN=?"
+					+ "   UNION"
+					+ "   SELECT Identifier FROM Phone WHERE USSN=?"
+					+ " )"
+					+ " AND STID IN (" + ids + ")"
+					+ " GROUP BY MONTH(DateInitialized), YEAR(DateInitialized) "
+			);
+			ps.setString(1, ssn);
+			ps.setString(2, ssn);
+			
+			r = ps.executeQuery();
+			
+			MonthYear date;
+			while (r.next()) {
+				date = new MonthYear(r.getInt("Month"), r.getInt("Year"));
+				if (stmt.containsKey(date)) {
+					ts = stmt.get(date);
+					ts.amountReceived = r.getInt("AmountReceived");
+					ts.numTransactionsReceived = r.getInt("NumTransactionsReceived");
+				} else {
+					ts = new TransactionStatement();
+					ts.date = date;
+					ts.amountReceived = r.getInt("AmountReceived");
+					ts.numTransactionsReceived = r.getInt("NumTransactionsReceived");
+					stmt.put(ts.date, ts);
+				}
+			}
+			
+			r.close();
+			con.commit();
+			
+			return stmt;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	/* Statements */
 	public SortedMap<MonthYear,TransactionStatement> getMonthlyStatement(String ssn) {
 		try {
@@ -1102,6 +1183,59 @@ public class EasyPayService {
 	}
 	
 	/* search */
+	public List<SendTransaction> searchSendTransactionsByDateRange(String ssn, Date start, Date end) {
+		try {
+			Timestamp startTime = new Timestamp(start.getTime());
+			Timestamp endTime = new Timestamp(end.getTime());
+			
+			String sql = "SELECT * FROM SendTransaction INNER JOIN UserAccount ON SSN=ISSN"
+					+ " WHERE (ISSN=? OR ToIdentifier IN "
+					+ " 			(SELECT Identifier FROM EmailAddress WHERE USSN=? "
+					+ "					UNION"
+					+ "				 SELECT Identifier FROM Phone WHERE USSN=?)"
+					+ " )"
+					+ " AND Cancelled=0"
+					+ " AND DateInitialized BETWEEN ? AND ? "
+					+ " ORDER BY STID DESC";
+			PreparedStatement ps = con.prepareStatement(sql);
+			
+			ps.setString(1, ssn);
+			ps.setString(2, ssn);
+			ps.setString(3, ssn);
+			ps.setTimestamp(4, startTime);
+			ps.setTimestamp(5, endTime);
+			
+			ResultSet r = ps.executeQuery();
+			
+			List<SendTransaction> transactions = new ArrayList<>();
+			SendTransaction st;
+			while (r.next()) {
+				st = new SendTransaction();
+				st.STID = r.getInt("STID");
+				st.Amount = r.getInt("Amount");
+				st.Cancelled = r.getBoolean("Cancelled");
+				st.DateInitialized = r.getTimestamp("DateInitialized");
+				st.ISSN = r.getString("ISSN");
+				st.Memo = r.getString("Memo");
+				st.ToIdentifier = r.getString("ToIdentifier");
+				st.IsToNewUser = r.getBoolean("IsToNewUser");
+				st.ToNewUserIdentifier = r.getString("ToNewUserIdentifier");
+				st.FromUser = getUserAccountFromResultSetRow(r);
+				st.ToUser = getUserAccountFromElectronicAddress(st.ToIdentifier);
+				transactions.add(st);
+			}
+			r.close();
+			con.commit();
+			
+			return transactions;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	
 	public List<SendTransaction> searchSendTransactions(String ssn, String q) {
 		try {
 			q = "%" + q + "%";
@@ -1137,6 +1271,7 @@ public class EasyPayService {
 			SendTransaction st;
 			while (r.next()) {
 				st = new SendTransaction();
+				st.STID = r.getInt("STID");
 				st.Amount = r.getInt("Amount");
 				st.Cancelled = r.getBoolean("Cancelled");
 				st.DateInitialized = r.getTimestamp("DateInitialized");
@@ -1217,6 +1352,59 @@ public class EasyPayService {
 		}
 		return null;
 		
+	}
+	
+	public List<RequestTransaction> searchRequestTransactionsByDateRange(String ssn, Date start, Date end) {
+		try {
+			Timestamp startTime = new Timestamp(start.getTime());
+			Timestamp endTime = new Timestamp(end.getTime());
+			
+			PreparedStatement ps = con.prepareStatement(
+					"SELECT * FROM RequestFrom NATURAL JOIN RequestTransaction INNER JOIN UserAccount ON ISSN=SSN \n"
+					+ " WHERE EIdentifier IN ("
+					+ "		SELECT Identifier FROM EmailAddress WHERE USSN=?\n"
+					+ "		UNION\n"
+					+ "		SELECT Identifier FROM Phone WHERE USSN=?"
+					+ "	)"
+					+ " AND DateInitialized BETWEEN ? AND ?"
+					+ " ORDER BY RTID DESC");
+			ps.setString(1, ssn);
+			ps.setString(2, ssn);
+			ps.setTimestamp(3, startTime);
+			ps.setTimestamp(4, endTime);
+			
+			ResultSet r = ps.executeQuery();
+			List<RequestTransaction> l = new ArrayList<RequestTransaction>();
+			RequestTransaction rt;
+			RequestFrom rf;
+			while (r.next()) {
+				rt = new RequestTransaction();
+				rt.TotalAmount = r.getInt("TotalAmount");
+				rt.DateInitialized = r.getTimestamp("DateInitialized");
+				rt.ISSN = r.getString("ISSN");
+				rt.Memo = r.getString("Memo");
+				rt.RTID = r.getInt("RTID");
+				
+				rt.IUser = getUserAccountFromResultSetRow(r);
+				
+				rt.From = new ArrayList<RequestFrom>();
+					rf = new RequestFrom();
+					rf.EIdentifier = r.getString("EIdentifier");
+					rf.Amount = r.getInt("Amount");
+					rf.User = getUserAccountFromElectronicAddress(rf.EIdentifier);
+					rt.From.add(rf);
+				
+				l.add(rt);
+			}
+			r.close();
+			con.commit();
+			
+			return l;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 }
